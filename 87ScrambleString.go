@@ -55,15 +55,46 @@ package main
 import("fmt"; "sort"; "strings")
 
 func main() {
-    var s1, s2 string = "abcde", "caebd"
+    var s1, s2 string = "great", "rgeat"
     fmt.Println(isScramble(s1, s2))
 
 }
 
 //without recursion
 func isScramble(s1 string, s2 string) bool {
-    var m = make(map[[2]string]bool)
-    return checkScramble(s1, s2, m)
+    //if s1==nil || s2==nil {return false}
+
+    if s1==s2 {return true}
+
+    var m, n int = len(s1), len(s2)
+    if m!=n {return false}
+    //fmt.Println(m,n)
+
+    var L = make([][][]bool, m)
+    for i:=0;i<m;i++ {
+        L[i] = make([][]bool, m)
+        for j:=0;j<m;j++ {
+            //fmt.Println(i,j)
+            L[i][j] = make([]bool, m+1)
+            L[i][j][1] = (s1[i]==s2[j])
+        }
+    }
+
+    for k:=2;k<=m;k++ {
+        for i:=0;i<=m-k;i++ {
+            for j:=0;j<=m-k;j++ {
+                L[i][j][k] = false
+                for p:=1;p<k;p++ {
+                    if ((L[i][j][p] && L[i+p][j+p][k-p]) || 
+                                (L[i][j+k-p][p] && L[i+p][j][k-p])) {
+                            L[i][j][k] = true
+                        }
+                }
+            }
+        }
+    }
+    return L[0][0][m]
+
 
 }
 
