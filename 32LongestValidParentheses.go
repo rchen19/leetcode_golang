@@ -19,7 +19,49 @@ import (
 	"fmt"
 )
 
+//slightly improved version compared to the one below
 func longestValidParentheses(s string) int {
+	var stack []int
+	//use a slice of length len(s)
+	//to mark if each index is paired
+	var flag []bool = make([]bool, len(s))
+
+	for i, char := range s {
+		if char == '(' {
+			//push index of '(' into stack
+			stack = append(stack, i)
+		} else if len(stack) > 0 {
+			//pop the stack when seeing ')'
+			//(popped index, current index) represents the start and end
+			//indices of paired '(' and ')
+			flag[stack[len(stack)-1]] = true //index of paired ')'
+			flag[i] = true                   //index of paired ')'
+			stack = stack[:len(stack)-1]     //pop the stack
+		}
+	}
+
+	//loop through the flag slice
+	//to find longest continuously flagged indices
+	var maxLength int = 0
+	var curLength int = 0
+	for _, yes := range flag {
+		if yes {
+			curLength++
+		} else {
+			if curLength > maxLength {
+				maxLength = curLength
+			}
+			curLength = 0
+		}
+	}
+	if curLength > maxLength {
+		maxLength = curLength
+	}
+	return maxLength
+}
+
+//much faster using stack
+func longestValidParentheses1(s string) int {
 	var stack []int
 	var segList [][2]int
 	//a seg is a pair of int representing start and end
@@ -70,7 +112,7 @@ func longestValidParentheses(s string) int {
 }
 
 //this one is very slow
-func longestValidParentheses1(s string) int {
+func longestValidParentheses2(s string) int {
 	if len(s) == 0 {
 		return 0
 	}
