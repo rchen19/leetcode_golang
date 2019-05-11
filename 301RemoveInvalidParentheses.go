@@ -27,8 +27,84 @@ import (
 	"fmt"
 )
 
-//using BFS iteration
+//using BFS recursion
 func removeInvalidParentheses(s string) []string {
+	var out []string
+
+	var queue []node = []node{node{s, 0, 0, true}}
+	recursiveBFS(&queue, &out)
+
+	return out
+}
+
+//BFS recursion
+func recursiveBFS(queue *[]node, out *[]string) {
+	if len(*queue) == 0 {
+		return
+	}
+	//fmt.Println((*queue))
+	var count int
+	//pop the first node from the queue
+	var currNode node = (*queue)[0]
+	*queue = (*queue)[1:]
+
+	if currNode.leftToRight {
+		//parse from left to right
+		//to find excess ')'
+		count = 0
+		for i := currNode.i; i < len(currNode.s); i++ {
+			switch currNode.s[i] {
+			case '(':
+				count++
+			case ')':
+				count--
+			}
+			//if count<0 => excess ')' detected
+			if count < 0 {
+				for j := currNode.j; j <= i; j++ {
+					if currNode.s[j] == ')' && (j == currNode.j || currNode.s[j-1] != ')') {
+						*queue = append(*queue, node{currNode.s[:j] + currNode.s[j+1:], i, j, currNode.leftToRight})
+						recursiveBFS(queue, out)
+					}
+				}
+				return
+			}
+		}
+		*queue = append(*queue, node{currNode.s, len(currNode.s) - 1, len(currNode.s) - 1, false})
+		recursiveBFS(queue, out)
+		//fmt.Println((*queue))
+	} else {
+		count = 0
+		//parse from right to left
+		//check for excess '('
+		for i := currNode.i; i >= 0; i-- {
+			switch currNode.s[i] {
+			case '(':
+				count--
+			case ')':
+				count++
+			}
+			//whenever count<0, need to remove a '('
+			if count < 0 {
+				for j := currNode.j; j >= i; j-- {
+					if currNode.s[j] == '(' && (j == currNode.j || currNode.s[j+1] != '(') {
+						*queue = append(*queue, node{currNode.s[:j] + currNode.s[j+1:], i - 1, j - 1, currNode.leftToRight})
+						recursiveBFS(queue, out)
+					}
+				}
+				return
+			}
+		}
+		//finished parsing from right to left
+		//fmt.Println(("here"))
+		*out = append(*out, currNode.s)
+	}
+	//recursiveBFS(queue, out)
+
+}
+
+//using BFS iteration
+func removeInvalidParentheses3(s string) []string {
 	var out []string
 	var currNode node
 	var count int
@@ -52,10 +128,10 @@ func removeInvalidParentheses(s string) []string {
 				case ')':
 					count--
 				}
-				//when never count<0, need to remove a ')'
+				//whenever count<0, need to remove a ')'
 				if count < 0 {
-					toPaseRightToLeft = false
 					//since there exist excess ')', no need to parse right->left
+					toPaseRightToLeft = false
 					for j := currNode.j; j <= i; j++ {
 						if currNode.s[j] == ')' && (j == currNode.j || currNode.s[j-1] != ')') {
 							queue = append(queue, node{currNode.s[:j] + currNode.s[j+1:], i, j, currNode.leftToRight})
@@ -82,7 +158,7 @@ func removeInvalidParentheses(s string) []string {
 				case ')':
 					count++
 				}
-				//when never count<0, need to remove a ')'
+				//whenever count<0, need to remove a '('
 				if count < 0 {
 					goodToGo = false
 					for j := currNode.j; j >= i; j-- {
@@ -131,7 +207,7 @@ func removeInvalidParentheses1(s string) []string {
 				case ')':
 					count--
 				}
-				//when never count<0, need to remove a ')'
+				//whenever count<0, need to remove a ')'
 				if count < 0 {
 					toPaseRightToLeft = false
 					//since there exist excess ')', no need to parse right->left
@@ -161,7 +237,7 @@ func removeInvalidParentheses1(s string) []string {
 				case ')':
 					count++
 				}
-				//when never count<0, need to remove a ')'
+				//whenever count<0, need to remove a '('
 				if count < 0 {
 					goodToGo = false
 					for j := currNode.j; j >= i; j-- {
